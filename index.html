@@ -1,2 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Big Ten Pick'em</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 
-Hello World!
+<style>
+  :root {
+    --ink:      #00274C;   /* Michigan blue - headers, primary text */
+    --maize:    #FFCB05;   /* accent, used sparingly */
+    --paper:    #F7F5F0;   /* page background */
+    --card:     #FFFFFF;
+    --rule:     #DCD8CF;   /* hairlines */
+    --muted:    #6B7280;
+    --good:     #15803D;
+    --bad:      #B91C1C;
+
+    --display:  'Barlow Condensed', system-ui, sans-serif;
+    --body:     'Barlow', system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 0 1rem 4rem;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 560px; margin: 0 auto; }
+
+  header.masthead {
+    border-bottom: 3px solid var(--ink);
+    padding: 1.75rem 0 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  .masthead h1 {
+    font-family: var(--display);
+    font-size: clamp(2rem, 9vw, 2.75rem);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    margin: 0;
+    line-height: 0.95;
+  }
+  .masthead .season {
+    font-family: var(--display);
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 0.35rem;
+  }
+
+  .status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    padding: 0.6rem 0.85rem;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    background: var(--card);
+    margin-bottom: 1.5rem;
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .dot.ok   { background: var(--good); }
+  .dot.err  { background: var(--bad); }
+  .dot.wait { background: var(--muted); }
+
+  .weekbar {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 0.25rem;
+  }
+  .weekbar h2 {
+    font-family: var(--display);
+    font-size: 1.5rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    margin: 0;
+  }
+  .byeflag {
+    font-family: var(--display);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    background: var(--maize);
+    color: var(--ink);
+    padding: 0.15rem 0.5rem;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+
+  ul.games { list-style: none; margin: 0; padding: 0; }
+  ul.games li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .slot {
+    font-family: var(--display);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    width: 2.75rem;
+    flex: none;
+  }
+  li.mich .slot { color: var(--ink); }
+  li.mich {
+    border-left: 4px solid var(--maize);
+    padding-left: 0.6rem;
+    margin-left: -0.6rem;
+  }
+  .matchup { flex: 1; font-weight: 500; }
+  .worth {
+    font-size: 0.8rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .deadlines {
+    margin-top: 1.5rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+    display: grid;
+    gap: 0.3rem;
+  }
+  .deadlines b { color: var(--ink); font-weight: 600; }
+
+  .fix {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--bad);
+    padding: 1rem;
+    border-radius: 3px;
+    font-size: 0.9rem;
+  }
+  .fix h3 {
+    font-family: var(--display);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.9rem;
+    margin: 0 0 0.5rem;
+  }
+  .fix code {
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 0.85em;
+    background: var(--paper);
+    padding: 0.1rem 0.3rem;
+    border-radius: 2px;
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/htm@3.1.1/dist/htm.umd.js" crossorigin></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+<script>
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyB6z499xG7BLNspbFXeau0GOy4i7ugD6A0",
+  authDomain: "b1g-pickem.firebaseapp.com",
+  databaseURL: "https://b1g-pickem-default-rtdb.firebaseio.com",
+  projectId: "b1g-pickem",
+  storageBucket: "b1g-pickem.firebasestorage.app",
+  messagingSenderId: "285409208482",
+  appId: "1:285409208482:web:83f59e5aec91a3d1678ffb"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const FIREBASE_CONFIG = {
+  apiKey:      "PASTE_API_KEY",
+  databaseURL: "PASTE_DATABASE_URL",
+  projectId:   "PASTE_PROJECT_ID"
+};
+// ---------------------------------------------------------------------------
+
+const { useState, useEffect } = React;
+const html = htm.bind(React.createElement);
+
+const configured = !FIREBASE_CONFIG.databaseURL.startsWith("PASTE_");
+let db = null;
+if (configured) {
+  firebase.initializeApp(FIREBASE_CONFIG);
+  db = firebase.database();
+}
+
+function Setup() {
+  return html`
+    <div class="fix">
+      <h3>Firebase config missing</h3>
+      Open <code>index.html</code> and replace the <code>PASTE_</code> placeholders
+      in <code>FIREBASE_CONFIG</code> with the values from your Firebase console,
+      under Project settings → Your apps → Web.
+    </div>`;
+}
+
+function Problem({ title, children }) {
+  return html`<div class="fix"><h3>${title}</h3>${children}</div>`;
+}
+
+function Week({ week, num }) {
+  // Michigan game renders last and is scored on the predicted score alone.
+  const picks = Object.keys(week.games || {})
+    .filter(k => k !== "mich")
+    .sort();
+  const mich = week.games && week.games.mich;
+
+  return html`
+    <div class="weekbar">
+      <h2>${week.label}</h2>
+      ${week.michiganBye && html`<span class="byeflag">Michigan bye</span>`}
+    </div>
+
+    <ul class="games">
+      ${picks.map((k, i) => html`
+        <li key=${k}>
+          <span class="slot">${"0" + (i + 1)}</span>
+          <span class="matchup">${week.games[k].label}</span>
+          <span class="worth">1 pt</span>
+        </li>`)}
+
+      ${mich && html`
+        <li class="mich" key="mich">
+          <span class="slot">Score</span>
+          <span class="matchup">${mich.label}</span>
+          <span class="worth">up to 5 pts</span>
+        </li>`}
+    </ul>
+
+    <div class="deadlines">
+      <div>Picks lock <b>${week.lockTimeLocal}</b></div>
+      <div>Slate final <b>${week.adminDeadlineLocal}</b></div>
+    </div>`;
+}
+
+function App() {
+  const [state, setState] = useState({ phase: "connecting" });
+
+  useEffect(() => {
+    if (!configured) return;
+
+    // Read currentWeek, then the matching week. Both live, so editing
+    // currentWeek in the Firebase console updates this page instantly.
+    const cfgRef = db.ref("config/currentWeek");
+    let weekRef = null;
+
+    const onWeek = snap => {
+      const week = snap.val();
+      if (!week) { setState({ phase: "noweek", num: snap.key }); return; }
+      setState({ phase: "ready", week, num: snap.key });
+    };
+
+    cfgRef.on("value", snap => {
+      const num = snap.val();
+      if (num === null) { setState({ phase: "empty" }); return; }
+      if (weekRef) weekRef.off("value", onWeek);
+      weekRef = db.ref("weeks/" + num);
+      weekRef.on("value", onWeek);
+    }, err => setState({ phase: "denied", message: err.message }));
+
+    return () => {
+      cfgRef.off();
+      if (weekRef) weekRef.off("value", onWeek);
+    };
+  }, []);
+
+  const statusText = {
+    connecting: "Connecting to Firebase\u2026",
+    empty:      "Connected \u2014 database is empty",
+    noweek:     "Connected \u2014 week not found",
+    denied:     "Connection refused",
+    ready:      "Connected"
+  }[state.phase];
+
+  const statusDot = state.phase === "ready" ? "ok"
+                  : state.phase === "connecting" ? "wait" : "err";
+
+  return html`
+    <div class="wrap">
+      <header class="masthead">
+        <h1>Big Ten Pick'em</h1>
+        <div class="season">2026 Season</div>
+      </header>
+
+      ${!configured
+        ? html`<${Setup} />`
+        : html`
+          <div class="status">
+            <span class="dot ${statusDot}"></span>
+            <span>${statusText}</span>
+          </div>
+
+          ${state.phase === "empty" && html`
+            <${Problem} title="No data yet">
+              Import <code>pickem-seed-2026.json</code> at the root of your
+              Realtime Database, then reload. Firebase console → Realtime
+              Database → Data → three-dot menu → Import JSON.
+            <//>`}
+
+          ${state.phase === "noweek" && html`
+            <${Problem} title="Week not found">
+              <code>config/currentWeek</code> points at a week that does not
+              exist. Set it to a number between 1 and 13.
+            <//>`}
+
+          ${state.phase === "denied" && html`
+            <${Problem} title="Database refused the read">
+              ${state.message} \u2014 if your test-mode rules have expired,
+              open the Rules tab and check the expiry date.
+            <//>`}
+
+          ${state.phase === "ready" && html`<${Week} week=${state.week} num=${state.num} />`}
+        `}
+    </div>`;
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(html`<${App} />`);
+</script>
+</body>
+</html>
