@@ -172,7 +172,31 @@
 </style>
 </head>
 <body>
-<div id="root"></div>
+<div id="root">
+  <div class="wrap">
+    <header class="masthead">
+      <h1>Big Ten Pick'em</h1>
+      <div class="season">2026 Season</div>
+    </header>
+    <div class="status"><span class="dot wait"></span><span>Loading scripts&hellip;</span></div>
+  </div>
+</div>
+
+<script>
+// Surface any error on the page itself instead of failing silently to blank.
+window.addEventListener("error", function (e) {
+  var r = document.getElementById("root");
+  if (!r) return;
+  var msg = (e && e.message) || "Unknown error";
+  var src = (e && e.filename) ? e.filename.split("/").pop() : "";
+  r.innerHTML =
+    '<div class="wrap"><header class="masthead"><h1>Big Ten Pick\'em</h1>' +
+    '<div class="season">2026 Season</div></header>' +
+    '<div class="fix"><h3>Script error</h3><code>' + msg + '</code>' +
+    (src ? '<br><span style="color:var(--muted)">in ' + src + '</span>' : '') +
+    '</div></div>';
+});
+</script>
 
 <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
@@ -206,10 +230,19 @@ const FIREBASE_CONFIG = {
 };
 // ---------------------------------------------------------------------------
 
+for (const [name, ok] of [["React", typeof React], ["ReactDOM", typeof ReactDOM],
+                          ["htm", typeof htm], ["firebase", typeof firebase]]) {
+  if (ok === "undefined") {
+    throw new Error(name + " failed to load - check the CDN script tags or your network");
+  }
+}
+
 const { useState, useEffect } = React;
 const html = htm.bind(React.createElement);
 
-const configured = !FIREBASE_CONFIG.databaseURL.startsWith("PASTE_");
+const dbUrl = (FIREBASE_CONFIG && FIREBASE_CONFIG.databaseURL) || "";
+const configured = dbUrl.length > 0 && dbUrl.indexOf("PASTE_") !== 0;
+const missingUrl = dbUrl.length === 0;
 let db = null;
 if (configured) {
   firebase.initializeApp(FIREBASE_CONFIG);
@@ -219,10 +252,17 @@ if (configured) {
 function Setup() {
   return html`
     <div class="fix">
-      <h3>Firebase config missing</h3>
-      Open <code>index.html</code> and replace the <code>PASTE_</code> placeholders
-      in <code>FIREBASE_CONFIG</code> with the values from your Firebase console,
-      under Project settings → Your apps → Web.
+      <h3>${missingUrl ? "No databaseURL in your config" : "Firebase config missing"}</h3>
+      ${missingUrl
+        ? html`Your <code>FIREBASE_CONFIG</code> has no <code>databaseURL</code> key.
+               Firebase leaves it out of the snippet when the Realtime Database did
+               not exist yet at the time you registered the web app. Copy it from the
+               top of the Realtime Database <b>Data</b> tab \u2014 it looks like
+               <code>https://your-project-default-rtdb.firebaseio.com</code> \u2014
+               and add it to the object in <code>index.html</code>.`
+        : html`Open <code>index.html</code> and replace the <code>PASTE_</code>
+               placeholders in <code>FIREBASE_CONFIG</code> with the values from
+               Project settings \u2192 Your apps \u2192 Web.`}
     </div>`;
 }
 
