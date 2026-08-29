@@ -6,195 +6,153 @@
 <title>Big Ten Pick'em</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
   :root {
-    --ink:      #00274C;   /* Michigan blue - headers, primary text */
-    --maize:    #FFCB05;   /* accent, used sparingly */
-    --paper:    #F7F5F0;   /* page background */
-    --card:     #FFFFFF;
-    --rule:     #DCD8CF;   /* hairlines */
-    --muted:    #6B7280;
-    --good:     #15803D;
-    --bad:      #B91C1C;
-
-    --display:  'Barlow Condensed', system-ui, sans-serif;
-    --body:     'Barlow', system-ui, sans-serif;
+    --ink:    #00274C;
+    --maize:  #FFCB05;
+    --paper:  #F7F5F0;
+    --card:   #FFFFFF;
+    --rule:   #DCD8CF;
+    --muted:  #6B7280;
+    --good:   #15803D;
+    --bad:    #B91C1C;
+    --display:'Barlow Condensed', system-ui, sans-serif;
+    --body:   'Barlow', system-ui, sans-serif;
   }
-
-  * { box-sizing: border-box; }
-
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   body {
-    margin: 0;
-    padding: 0 1rem 4rem;
-    background: var(--paper);
-    color: var(--ink);
-    font-family: var(--body);
-    font-size: 16px;
-    line-height: 1.5;
+    margin: 0; padding: 0 1rem 5rem;
+    background: var(--paper); color: var(--ink);
+    font-family: var(--body); font-size: 16px; line-height: 1.5;
     -webkit-font-smoothing: antialiased;
   }
-
   .wrap { max-width: 560px; margin: 0 auto; }
 
   header.masthead {
     border-bottom: 3px solid var(--ink);
-    padding: 1.75rem 0 0.75rem;
-    margin-bottom: 1.5rem;
+    padding: 1.5rem 0 0.6rem; margin-bottom: 1.25rem;
+    display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem;
   }
   .masthead h1 {
-    font-family: var(--display);
-    font-size: clamp(2rem, 9vw, 2.75rem);
-    font-weight: 700;
-    letter-spacing: -0.01em;
-    text-transform: uppercase;
-    margin: 0;
-    line-height: 0.95;
+    font-family: var(--display); font-size: clamp(1.75rem, 8vw, 2.4rem);
+    font-weight: 700; text-transform: uppercase; margin: 0; line-height: 0.95;
   }
-  .masthead .season {
-    font-family: var(--display);
-    font-size: 0.95rem;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-top: 0.35rem;
+  .masthead .who {
+    font-family: var(--display); font-size: 0.85rem; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
+    white-space: nowrap; padding-bottom: 0.15rem;
   }
 
-  .status {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.85rem;
-    padding: 0.6rem 0.85rem;
-    border: 1px solid var(--rule);
-    border-radius: 3px;
-    background: var(--card);
-    margin-bottom: 1.5rem;
-  }
-  .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
-  .dot.ok   { background: var(--good); }
-  .dot.err  { background: var(--bad); }
-  .dot.wait { background: var(--muted); }
+  .weekbar { display: flex; align-items: baseline; justify-content: space-between;
+             gap: 1rem; margin-bottom: 0.25rem; }
+  .weekbar h2 { font-family: var(--display); font-size: 1.4rem; font-weight: 600;
+                text-transform: uppercase; margin: 0; }
+  .countdown { font-size: 0.85rem; color: var(--muted); white-space: nowrap; }
+  .countdown.soon { color: var(--bad); font-weight: 600; }
 
-  .weekbar {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--rule);
-    margin-bottom: 0.25rem;
-  }
-  .weekbar h2 {
-    font-family: var(--display);
-    font-size: 1.5rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-    margin: 0;
-  }
-  .byeflag {
-    font-family: var(--display);
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    background: var(--maize);
-    color: var(--ink);
-    padding: 0.15rem 0.5rem;
-    border-radius: 2px;
-    white-space: nowrap;
-  }
+  .byeflag { font-family: var(--display); font-size: 0.72rem; font-weight: 600;
+             letter-spacing: 0.12em; text-transform: uppercase;
+             background: var(--maize); padding: 0.15rem 0.5rem; border-radius: 2px; }
 
-  ul.games { list-style: none; margin: 0; padding: 0; }
-  ul.games li {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.85rem 0;
-    border-bottom: 1px solid var(--rule);
+  .game { border-top: 1px solid var(--rule); padding: 0.6rem 0 1.1rem; }
+  .game .worth { font-family: var(--display); font-size: 0.72rem; font-weight: 600;
+                 letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+                 margin-bottom: 0.5rem; }
+  .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+  .choice {
+    font-family: var(--body); font-size: 1rem; font-weight: 600;
+    background: var(--card); color: var(--ink);
+    border: 1.5px solid var(--rule); border-radius: 4px;
+    padding: 0.85rem 0.6rem; cursor: pointer; text-align: center;
+    min-height: 3.25rem; transition: background .12s, border-color .12s;
   }
-  .slot {
-    font-family: var(--display);
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    color: var(--muted);
-    width: 2.75rem;
-    flex: none;
-  }
-  li.mich .slot { color: var(--ink); }
-  li.mich {
-    border-left: 4px solid var(--maize);
-    padding-left: 0.6rem;
-    margin-left: -0.6rem;
-  }
-  .matchup { flex: 1; font-weight: 500; }
-  .worth {
-    font-size: 0.8rem;
-    color: var(--muted);
-    white-space: nowrap;
-  }
+  .choice small { display: block; font-weight: 500; font-size: 0.72rem;
+                  color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+  .choice.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .choice.on small { color: rgba(255,255,255,.7); }
+  .choice:disabled { cursor: default; opacity: .5; }
 
-  .deadlines {
-    margin-top: 1.5rem;
-    font-size: 0.85rem;
-    color: var(--muted);
-    display: grid;
-    gap: 0.3rem;
-  }
-  .deadlines b { color: var(--ink); font-weight: 600; }
+  .matchline { font-size: 0.95rem; font-weight: 600; margin: 1.1rem 0 0; }
 
-  .fix {
-    background: var(--card);
-    border: 1px solid var(--rule);
-    border-left: 4px solid var(--bad);
-    padding: 1rem;
-    border-radius: 3px;
-    font-size: 0.9rem;
+  .game.mich { border-top: 3px solid var(--maize); }
+  .scorebox { display: flex; align-items: flex-start; gap: 0.6rem; }
+  .scorebox label { flex: 1; }
+  .scorebox .lbl { font-family: var(--display); font-size: 0.72rem; font-weight: 600;
+                   letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+                   display: block; margin-bottom: 0.25rem; }
+  .scorebox input {
+    width: 100%; font-family: var(--display); font-size: 2rem; font-weight: 700;
+    text-align: center; padding: 0.4rem; color: var(--ink);
+    border: 1.5px solid var(--rule); border-radius: 4px; background: var(--card);
   }
-  .fix h3 {
-    font-family: var(--display);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-size: 0.9rem;
-    margin: 0 0 0.5rem;
+  .scorebox input:focus { outline: 2px solid var(--ink); outline-offset: -1px; }
+  .dash { font-family: var(--display); font-size: 1.5rem; color: var(--muted);
+          padding-top: 1.6rem; }
+  .whoops { color: var(--bad); font-size: 0.85rem; margin-top: 0.5rem; }
+
+  .cta {
+    width: 100%; margin-top: 1.5rem; padding: 1rem;
+    font-family: var(--display); font-size: 1.1rem; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    background: var(--ink); color: #fff; border: none; border-radius: 4px; cursor: pointer;
   }
-  .fix code {
-    font-family: ui-monospace, Menlo, monospace;
-    font-size: 0.85em;
-    background: var(--paper);
-    padding: 0.1rem 0.3rem;
-    border-radius: 2px;
+  .cta:disabled { background: var(--rule); color: var(--muted); cursor: default; }
+  .cta.ghost { background: none; color: var(--ink); border: 1.5px solid var(--ink); }
+
+  .done { text-align: center; padding: 1.5rem 0 0.5rem; }
+  .done .check {
+    width: 54px; height: 54px; border-radius: 50%; background: var(--maize);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 1.75rem; margin-bottom: 0.35rem;
   }
+  .done h2 { font-family: var(--display); text-transform: uppercase;
+             font-size: 1.6rem; margin: 0.25rem 0 0.15rem; }
+  .done p { color: var(--muted); margin: 0; font-size: 0.9rem; }
+
+  ul.summary { list-style: none; margin: 1.5rem 0 0; padding: 0; }
+  ul.summary li { display: flex; justify-content: space-between; gap: 1rem;
+                  padding: 0.75rem 0; border-bottom: 1px solid var(--rule); }
+  ul.summary li:first-child { border-top: 1px solid var(--rule); }
+  ul.summary .pick { font-weight: 700; white-space: nowrap; }
+  ul.summary .of { color: var(--muted); font-size: 0.9rem; text-align: right; }
+
+  .roster { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.5rem; }
+  .lead { color: var(--muted); font-size: 0.95rem; margin: 0 0 0.5rem; }
+
+  table.all { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 1rem; }
+  table.all th { font-family: var(--display); font-size: 0.72rem; font-weight: 600;
+                 letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
+                 text-align: left; padding: 0.4rem 0.35rem; border-bottom: 2px solid var(--ink); }
+  table.all td { padding: 0.5rem 0.35rem; border-bottom: 1px solid var(--rule); }
+  table.all td.name { font-weight: 700; white-space: nowrap; }
+  table.all tr.me td { background: #FFFBEB; }
+  table.all td.none { color: var(--muted); }
+
+  .fix { background: var(--card); border: 1px solid var(--rule);
+         border-left: 4px solid var(--bad); padding: 1rem; border-radius: 3px; font-size: 0.9rem; }
+  .fix h3 { font-family: var(--display); text-transform: uppercase; letter-spacing: 0.08em;
+            font-size: 0.9rem; margin: 0 0 0.5rem; }
+  .fix code { font-family: ui-monospace, Menlo, monospace; font-size: 0.85em;
+              background: var(--paper); padding: 0.1rem 0.3rem; border-radius: 2px; }
+  .quiet { color: var(--muted); font-size: 0.85rem; text-align: center; margin-top: 1.5rem; }
 </style>
 </head>
 <body>
 <div id="root">
   <div class="wrap">
-    <header class="masthead">
-      <h1>Big Ten Pick'em</h1>
-      <div class="season">2026 Season</div>
-    </header>
-    <div class="status"><span class="dot wait"></span><span>Loading scripts&hellip;</span></div>
+    <header class="masthead"><h1>Big Ten Pick'em</h1></header>
+    <p class="quiet">Loading&hellip;</p>
   </div>
 </div>
 
 <script>
-// Surface any error on the page itself instead of failing silently to blank.
 window.addEventListener("error", function (e) {
   var r = document.getElementById("root");
   if (!r) return;
-  var msg = (e && e.message) || "Unknown error";
-  var src = (e && e.filename) ? e.filename.split("/").pop() : "";
-  r.innerHTML =
-    '<div class="wrap"><header class="masthead"><h1>Big Ten Pick\'em</h1>' +
-    '<div class="season">2026 Season</div></header>' +
-    '<div class="fix"><h3>Script error</h3><code>' + msg + '</code>' +
-    (src ? '<br><span style="color:var(--muted)">in ' + src + '</span>' : '') +
-    '</div></div>';
+  r.innerHTML = '<div class="wrap"><header class="masthead"><h1>Big Ten Pick\'em</h1></header>'
+    + '<div class="fix"><h3>Script error</h3><code>' + ((e && e.message) || "Unknown") + '</code></div></div>';
 });
 </script>
 
@@ -202,11 +160,13 @@ window.addEventListener("error", function (e) {
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
 <script src="https://unpkg.com/htm@3.1.1/dist/htm.umd.js" crossorigin></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
 <script>
-
-
+// ---------------------------------------------------------------------------
+// PASTE YOUR FIREBASE CONFIG HERE  (keep the name FIREBASE_CONFIG)
+// ---------------------------------------------------------------------------
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyB6z499xG7BLNspbFXeau0GOy4i7ugD6A0",
   authDomain: "b1g-pickem.firebaseapp.com",
@@ -215,163 +175,351 @@ const FIREBASE_CONFIG = {
   storageBucket: "b1g-pickem.firebasestorage.app",
   messagingSenderId: "285409208482",
   appId: "1:285409208482:web:83f59e5aec91a3d1678ffb"
-};
-// ---------------------------------------------------------------------------
+};// ---------------------------------------------------------------------------
 
-for (const [name, ok] of [["React", typeof React], ["ReactDOM", typeof ReactDOM],
-                          ["htm", typeof htm], ["firebase", typeof firebase]]) {
-  if (ok === "undefined") {
-    throw new Error(name + " failed to load - check the CDN script tags or your network");
-  }
+for (var _p of [["React", typeof React], ["ReactDOM", typeof ReactDOM],
+                ["htm", typeof htm], ["firebase", typeof firebase]]) {
+  if (_p[1] === "undefined") throw new Error(_p[0] + " failed to load");
 }
 
-const { useState, useEffect } = React;
+const { useState, useEffect, useRef } = React;
 const html = htm.bind(React.createElement);
 
 const dbUrl = (FIREBASE_CONFIG && FIREBASE_CONFIG.databaseURL) || "";
 const configured = dbUrl.length > 0 && dbUrl.indexOf("PASTE_") !== 0;
-const missingUrl = dbUrl.length === 0;
-let db = null;
+
+let db = null, auth = null;
 if (configured) {
   firebase.initializeApp(FIREBASE_CONFIG);
   db = firebase.database();
+  auth = firebase.auth();
 }
 
-function Setup() {
+const PICK_KEYS = ["g1", "g2", "g3"];
+
+function countdown(msLeft) {
+  if (msLeft <= 0) return "locked";
+  const mins = Math.floor(msLeft / 60000);
+  const d = Math.floor(mins / 1440), h = Math.floor((mins % 1440) / 60), m = mins % 60;
+  if (d > 0) return d + "d " + h + "h left";
+  if (h > 0) return h + "h " + m + "m left";
+  return m + "m left";
+}
+
+// Complete = all three winners, plus a valid Michigan score unless it's the bye.
+function isComplete(week, picks) {
+  if (!picks) return false;
+  const w = picks.winners || {};
+  if (!PICK_KEYS.every(function (k) { return w[k]; })) return false;
+  if (week.michiganBye) return true;
+  const s = picks.michScore;
+  return !!s && typeof s.mich === "number" && typeof s.opp === "number" && s.mich > s.opp;
+}
+
+function scoreLine(game, s) {
+  // Always display in away-home order, matching the matchup label.
+  return game.michiganIs === "home"
+    ? s.opp + "\u2013" + s.mich
+    : s.mich + "\u2013" + s.opp;
+}
+
+// --- screens ---------------------------------------------------------------
+
+function Roster(props) {
+  const players = props.players, claims = props.claims;
+  const ids = Object.keys(players).sort(function (a, b) {
+    return players[a].displayName.localeCompare(players[b].displayName);
+  });
   return html`
-    <div class="fix">
-      <h3>${missingUrl ? "No databaseURL in your config" : "Firebase config missing"}</h3>
-      ${missingUrl
-        ? html`Your <code>FIREBASE_CONFIG</code> has no <code>databaseURL</code> key.
-               Firebase leaves it out of the snippet when the Realtime Database did
-               not exist yet at the time you registered the web app. Copy it from the
-               top of the Realtime Database <b>Data</b> tab \u2014 it looks like
-               <code>https://your-project-default-rtdb.firebaseio.com</code> \u2014
-               and add it to the object in <code>index.html</code>.`
-        : html`Open <code>index.html</code> and replace the <code>PASTE_</code>
-               placeholders in <code>FIREBASE_CONFIG</code> with the values from
-               Project settings \u2192 Your apps \u2192 Web.`}
+    <p className="lead">Tap your name to start. You only do this once on this device.</p>
+    <div className="roster">
+      ${ids.map(function (id) {
+        const taken = !!claims[id];
+        return html`
+          <button className="choice" key=${id} disabled=${taken}
+                  onClick=${function () { props.onClaim(id); }}>
+            ${players[id].displayName}
+            ${taken && html`<small>Taken</small>`}
+          </button>`;
+      })}
+    </div>
+    ${props.error && html`<p className="whoops">${props.error}</p>`}
+    <p className="quiet">Tapped the wrong name? Tell Trevor \u2014 he can undo it.</p>`;
+}
+
+function GameRow(props) {
+  const game = props.game, value = props.value;
+  function opt(side) {
+    return html`
+      <button className=${"choice" + (value === game[side] ? " on" : "")}
+              onClick=${function () { props.onPick(game[side]); }}>
+        ${game[side]}
+        <small>${side === "away" ? "Away" : "Home"}</small>
+      </button>`;
+  }
+  return html`
+    <div className="game">
+      <div className="worth">1 point</div>
+      <div className="choices">${opt("away")}${opt("home")}</div>
     </div>`;
 }
 
-function Problem({ title, children }) {
-  return html`<div class="fix"><h3>${title}</h3>${children}</div>`;
-}
+function MichRow(props) {
+  const game = props.game, score = props.score;
+  const michHome = game.michiganIs === "home";
+  const oppAbbr = michHome ? game.away : game.home;
+  const bad = score.mich !== "" && score.opp !== "" && Number(score.mich) <= Number(score.opp);
 
-function Week({ week, num }) {
-  // Michigan game renders last and is scored on the predicted score alone.
-  const picks = Object.keys(week.games || {})
-    .filter(k => k !== "mich")
-    .sort();
-  const mich = week.games && week.games.mich;
+  function field(key, label) {
+    return html`
+      <label>
+        <span className="lbl">${label}</span>
+        <input type="number" inputMode="numeric" min="0" max="99"
+               value=${score[key]}
+               onChange=${function (e) { props.onScore(key, e.target.value); }} />
+      </label>`;
+  }
 
   return html`
-    <div class="weekbar">
-      <h2>${week.label}</h2>
-      ${week.michiganBye && html`<span class="byeflag">Michigan bye</span>`}
+    <div className="game mich">
+      <div className="worth">Predict the score \u2014 up to 5 points</div>
+      <div className="scorebox">
+        ${michHome ? field("opp", oppAbbr)  : field("mich", "MICH")}
+        <span className="dash">\u2013</span>
+        ${michHome ? field("mich", "MICH") : field("opp", oppAbbr)}
+      </div>
+      ${bad && html`<p className="whoops">
+        We're all Michigan fans here \u2014 give Michigan the higher score.</p>`}
+    </div>`;
+}
+
+function Picks(props) {
+  const week = props.week, games = week.games || {}, picks = props.picks;
+  return html`
+    ${PICK_KEYS.filter(function (k) { return games[k]; }).map(function (k) {
+      return html`
+        <div key=${k}>
+          <p className="matchline">${games[k].label}</p>
+          <${GameRow} game=${games[k]} value=${(picks.winners || {})[k]}
+                      onPick=${function (team) { props.onPick(k, team); }} />
+        </div>`;
+    })}
+
+    ${games.mich && html`
+      <p className="matchline">${games.mich.label}</p>
+      <${MichRow} game=${games.mich} score=${props.score} onScore=${props.onScore} />`}
+
+    <button className="cta" disabled=${!props.complete} onClick=${props.onDone}>
+      ${props.complete ? "I'm done" : "Finish all picks first"}
+    </button>
+    <p className="quiet">Picks save as you tap. Nothing is lost if you close this.</p>`;
+}
+
+function Summary(props) {
+  const week = props.week, games = week.games || {}, picks = props.picks, s = picks.michScore;
+  return html`
+    <div className="done">
+      <div className="check">\u2713</div>
+      <h2>You're all set</h2>
+      <p>${props.left > 0
+            ? "You can still change these \u2014 " + countdown(props.left)
+            : "Picks are locked."}</p>
     </div>
-
-    <ul class="games">
-      ${picks.map((k, i) => html`
-        <li key=${k}>
-          <span class="slot">${"0" + (i + 1)}</span>
-          <span class="matchup">${week.games[k].label}</span>
-          <span class="worth">1 pt</span>
-        </li>`)}
-
-      ${mich && html`
-        <li class="mich" key="mich">
-          <span class="slot">Score</span>
-          <span class="matchup">${mich.label}</span>
-          <span class="worth">up to 5 pts</span>
+    <ul className="summary">
+      ${PICK_KEYS.filter(function (k) { return games[k]; }).map(function (k) {
+        return html`
+          <li key=${k}>
+            <span className="pick">${(picks.winners || {})[k]}</span>
+            <span className="of">${games[k].label}</span>
+          </li>`;
+      })}
+      ${games.mich && s && html`
+        <li key="mich">
+          <span className="pick">${scoreLine(games.mich, s)}</span>
+          <span className="of">${games.mich.label}</span>
         </li>`}
     </ul>
+    ${props.left > 0 && html`
+      <button className="cta ghost" onClick=${props.onEdit}>Change my picks</button>`}`;
+}
 
-    <div class="deadlines">
-      <div>Picks lock <b>${week.lockTimeLocal}</b></div>
-      <div>Slate final <b>${week.adminDeadlineLocal}</b></div>
+function Everyone(props) {
+  const week = props.week, games = week.games || {}, all = props.all, players = props.players;
+  const ids = Object.keys(players).sort(function (a, b) {
+    return players[a].displayName.localeCompare(players[b].displayName);
+  });
+  const cols = PICK_KEYS.filter(function (k) { return games[k]; });
+  return html`
+    <p className="lead">Picks are locked. Here's what everyone went with.</p>
+    <div style=${{ overflowX: "auto" }}>
+      <table className="all">
+        <thead><tr>
+          <th>Player</th>
+          ${cols.map(function (k, i) { return html`<th key=${k}>0${i + 1}</th>`; })}
+          ${games.mich && html`<th key="m">Mich</th>`}
+        </tr></thead>
+        <tbody>
+          ${ids.map(function (id) {
+            const p = all[id], s = p && p.michScore;
+            return html`
+              <tr key=${id} className=${id === props.meId ? "me" : ""}>
+                <td className="name">${players[id].displayName}</td>
+                ${cols.map(function (k) {
+                  const v = p && p.winners && p.winners[k];
+                  return html`<td key=${k} className=${v ? "" : "none"}>${v || "\u2014"}</td>`;
+                })}
+                ${games.mich && html`
+                  <td key="m" className=${s ? "" : "none"}>
+                    ${s ? scoreLine(games.mich, s) : "\u2014"}</td>`}
+              </tr>`;
+          })}
+        </tbody>
+      </table>
     </div>`;
 }
 
+// --- app -------------------------------------------------------------------
+
 function App() {
-  const [state, setState] = useState({ phase: "connecting" });
+  const [uid, setUid]         = useState(null);
+  const [week, setWeek]       = useState(null);
+  const [weekNum, setWeekNum] = useState(null);
+  const [players, setPlayers] = useState(null);
+  const [claims, setClaims]   = useState({});
+  const [picks, setPicks]     = useState(null);
+  const [allPicks, setAll]    = useState(null);
+  const [score, setScore]     = useState({ mich: "", opp: "" });
+  const [editing, setEditing] = useState(false);
+  const [claimErr, setErr]    = useState(null);
+  const [offset, setOffset]   = useState(0);
+  const [, setTick]           = useState(0);
+  const scoreLoaded = useRef(false);
 
-  useEffect(() => {
+  // Sign in, and track the server clock so the countdown can't be faked.
+  useEffect(function () {
     if (!configured) return;
-
-    // Read currentWeek, then the matching week. Both live, so editing
-    // currentWeek in the Firebase console updates this page instantly.
-    const cfgRef = db.ref("config/currentWeek");
-    let weekRef = null;
-
-    const onWeek = snap => {
-      const week = snap.val();
-      if (!week) { setState({ phase: "noweek", num: snap.key }); return; }
-      setState({ phase: "ready", week, num: snap.key });
-    };
-
-    cfgRef.on("value", snap => {
-      const num = snap.val();
-      if (num === null) { setState({ phase: "empty" }); return; }
-      if (weekRef) weekRef.off("value", onWeek);
-      weekRef = db.ref("weeks/" + num);
-      weekRef.on("value", onWeek);
-    }, err => setState({ phase: "denied", message: err.message }));
-
-    return () => {
-      cfgRef.off();
-      if (weekRef) weekRef.off("value", onWeek);
-    };
+    auth.signInAnonymously().catch(function (e) { setErr(e.message); });
+    const un = auth.onAuthStateChanged(function (u) { setUid(u ? u.uid : null); });
+    db.ref(".info/serverTimeOffset").on("value", function (s) { setOffset(s.val() || 0); });
+    const t = setInterval(function () { setTick(function (x) { return x + 1; }); }, 30000);
+    return function () { un(); clearInterval(t); };
   }, []);
 
-  const statusText = {
-    connecting: "Connecting to Firebase\u2026",
-    empty:      "Connected \u2014 database is empty",
-    noweek:     "Connected \u2014 week not found",
-    denied:     "Connection refused",
-    ready:      "Connected"
-  }[state.phase];
+  // Roster, claims, and the current week.
+  useEffect(function () {
+    if (!configured) return;
+    db.ref("players").on("value", function (s) { setPlayers(s.val() || {}); });
+    db.ref("claims").on("value",  function (s) { setClaims(s.val() || {}); });
+    let wRef = null;
+    db.ref("config/currentWeek").on("value", function (s) {
+      const n = s.val();
+      if (n === null) return;
+      if (wRef) wRef.off();
+      setWeekNum(String(n));
+      wRef = db.ref("weeks/" + n);
+      wRef.on("value", function (ws) { setWeek(ws.val()); });
+    });
+  }, []);
 
-  const statusDot = state.phase === "ready" ? "ok"
-                  : state.phase === "connecting" ? "wait" : "err";
+  const meId = Object.keys(claims).find(function (id) { return claims[id] === uid; }) || null;
+  const now  = Date.now() + offset;
+  const left = week ? week.lockTime - now : 0;
+  const locked = week ? left <= 0 : false;
 
-  return html`
-    <div class="wrap">
-      <header class="masthead">
-        <h1>Big Ten Pick'em</h1>
-        <div class="season">2026 Season</div>
-      </header>
+  // My picks for this week.
+  useEffect(function () {
+    if (!meId || !weekNum) return;
+    const ref = db.ref("picks/" + weekNum + "/" + meId);
+    ref.on("value", function (s) {
+      const v = s.val() || {};
+      setPicks(v);
+      if (!scoreLoaded.current) {
+        if (v.michScore) setScore({ mich: String(v.michScore.mich), opp: String(v.michScore.opp) });
+        scoreLoaded.current = true;
+      }
+    });
+    return function () { ref.off(); scoreLoaded.current = false; };
+  }, [meId, weekNum]);
 
-      ${!configured
-        ? html`<${Setup} />`
-        : html`
-          <div class="status">
-            <span class="dot ${statusDot}"></span>
-            <span>${statusText}</span>
-          </div>
+  // Everyone's picks - readable only after the week locks.
+  useEffect(function () {
+    if (!weekNum || !locked) return;
+    const ref = db.ref("picks/" + weekNum);
+    ref.on("value", function (s) { setAll(s.val() || {}); }, function () { setAll({}); });
+    return function () { ref.off(); };
+  }, [weekNum, locked]);
 
-          ${state.phase === "empty" && html`
-            <${Problem} title="No data yet">
-              Import <code>pickem-seed-2026.json</code> at the root of your
-              Realtime Database, then reload. Firebase console → Realtime
-              Database → Data → three-dot menu → Import JSON.
-            <//>`}
+  function claim(id) {
+    setErr(null);
+    db.ref("claims/" + id).set(uid).catch(function () {
+      setErr("Someone just took that name. Pick another, or ask Trevor to sort it out.");
+    });
+  }
 
-          ${state.phase === "noweek" && html`
-            <${Problem} title="Week not found">
-              <code>config/currentWeek</code> points at a week that does not
-              exist. Set it to a number between 1 and 13.
-            <//>`}
+  function stamp() {
+    db.ref("picks/" + weekNum + "/" + meId + "/submittedAt")
+      .set(firebase.database.ServerValue.TIMESTAMP);
+  }
 
-          ${state.phase === "denied" && html`
-            <${Problem} title="Database refused the read">
-              ${state.message} \u2014 if your test-mode rules have expired,
-              open the Rules tab and check the expiry date.
-            <//>`}
+  function pickWinner(gameId, team) {
+    db.ref("picks/" + weekNum + "/" + meId + "/winners/" + gameId).set(team);
+    stamp();
+  }
 
-          ${state.phase === "ready" && html`<${Week} week=${state.week} num=${state.num} />`}
-        `}
-    </div>`;
+  // Write only once both boxes hold a valid Michigan win; the rules reject
+  // anything else, so writing sooner would just throw a permission error.
+  function setScoreField(key, raw) {
+    const next = Object.assign({}, score);
+    next[key] = String(raw).replace(/[^0-9]/g, "").slice(0, 2);
+    setScore(next);
+    const m = Number(next.mich), o = Number(next.opp);
+    if (next.mich !== "" && next.opp !== "" && m > o) {
+      db.ref("picks/" + weekNum + "/" + meId + "/michScore").set({ mich: m, opp: o });
+      stamp();
+    }
+  }
+
+  function shell(body) {
+    return html`
+      <div className="wrap">
+        <header className="masthead">
+          <h1>Big Ten Pick'em</h1>
+          ${meId && players && players[meId] &&
+            html`<span className="who">${players[meId].displayName}</span>`}
+        </header>
+        ${body}
+      </div>`;
+  }
+
+  if (!configured) return shell(html`
+    <div className="fix"><h3>Firebase config missing</h3>
+      Replace the <code>PASTE_</code> values in <code>index.html</code>.</div>`);
+
+  if (!week || !players || !uid) return shell(html`<p className="quiet">Loading\u2026</p>`);
+
+  if (!meId) return shell(html`
+    <${Roster} players=${players} claims=${claims} onClaim=${claim} error=${claimErr} />`);
+
+  const complete = isComplete(week, picks);
+
+  return shell(html`
+    <div className="weekbar">
+      <h2>${week.label}</h2>
+      ${week.michiganBye
+        ? html`<span className="byeflag">Michigan bye</span>`
+        : html`<span className=${"countdown" + (left > 0 && left < 86400000 ? " soon" : "")}>
+                 ${countdown(left)}</span>`}
+    </div>
+
+    ${locked
+      ? html`<${Everyone} week=${week} players=${players} all=${allPicks || {}} meId=${meId} />`
+      : (complete && !editing)
+        ? html`<${Summary} week=${week} picks=${picks} left=${left}
+                           onEdit=${function () { setEditing(true); }} />`
+        : html`<${Picks} week=${week} picks=${picks || {}} score=${score}
+                         onPick=${pickWinner} onScore=${setScoreField}
+                         complete=${complete}
+                         onDone=${function () { setEditing(false); }} />`}`);
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(html`<${App} />`);
