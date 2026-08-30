@@ -304,11 +304,32 @@
 </div>
 
 <script>
-window.addEventListener("error", function (e) {
+// Two different situations, two different responses.
+//
+// Before React mounts, an error means the page is unusable, so show it.
+// After React mounts, errors are almost always transient - iOS suspends the
+// page when the phone sleeps and Firebase's socket throws on the way back.
+// Wiping a working UI for that is worse than the error itself.
+window.__booted = false;
+
+function bootFailure(msg) {
   var r = document.getElementById("root");
   if (!r) return;
   r.innerHTML = '<div class="wrap"><header class="masthead"><h1>Big Ten Pick\'em</h1></header>'
-    + '<div class="fix"><h3>Script error</h3><code>' + ((e && e.message) || "Unknown") + '</code></div></div>';
+    + '<div class="fix"><h3>Script error</h3><code>' + msg + '</code></div></div>';
+}
+
+window.addEventListener("error", function (e) {
+  var msg = (e && e.message) || "Unknown error";
+  if (window.__booted) { console.warn("Recovered from:", msg); return; }
+  bootFailure(msg);
+});
+
+window.addEventListener("unhandledrejection", function (e) {
+  if (window.__booted) {
+    console.warn("Unhandled rejection:", e && e.reason);
+    if (e.preventDefault) e.preventDefault();
+  }
 });
 </script>
 
@@ -332,6 +353,7 @@ const FIREBASE_CONFIG = {
   messagingSenderId: "285409208482",
   appId: "1:285409208482:web:83f59e5aec91a3d1678ffb"
 };// ---------------------------------------------------------------------------
+
 
 
 for (var _p of [["React", typeof React], ["ReactDOM", typeof ReactDOM],
@@ -986,7 +1008,22 @@ function App() {
     const un = auth.onAuthStateChanged(function (u) { setUid(u ? u.uid : null); });
     db.ref(".info/serverTimeOffset").on("value", function (s) { setOffset(s.val() || 0); });
     const t = setInterval(function () { setTick(function (x) { return x + 1; }); }, 30000);
-    return function () { un(); clearInterval(t); };
+
+    // Coming back from sleep: nudge the socket and refresh the countdown.
+    function wake() {
+      if (document.visibilityState !== "visible") return;
+      try { db.goOnline(); } catch (e) { /* already online */ }
+      setTick(function (x) { return x + 1; });
+    }
+    document.addEventListener("visibilitychange", wake);
+    window.addEventListener("pageshow", wake);
+
+    return function () {
+      un();
+      clearInterval(t);
+      document.removeEventListener("visibilitychange", wake);
+      window.removeEventListener("pageshow", wake);
+    };
   }, []);
 
   // Roster, claims, the full schedule, and results - all publicly readable.
@@ -1240,6 +1277,7 @@ function App() {
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(html`<${App} />`);
+window.__booted = true;
 </script>
 </body>
 </html>
