@@ -239,6 +239,15 @@
   table.board tr.me td { background: #FFFBEB; }
   table.board tr.me td.rank { color: var(--ink); }
 
+  .visits { list-style: none; margin: 0.5rem 0 0; padding: 0; }
+  .visits li { display: flex; align-items: center; gap: 0.6rem; padding: 0.3rem 0;
+               font-size: 0.85rem; }
+  .visits .day { font-family: ui-monospace, Menlo, monospace; font-size: 0.75rem;
+                 color: var(--muted); width: 4.5rem; flex: none; }
+  .visits .bar { height: 10px; background: var(--maize); border-radius: 2px;
+                 min-width: 3px; }
+  .visits .num { font-family: var(--display); font-weight: 700; color: var(--ink); }
+
   .wkwin { list-style: none; margin: 0.5rem 0 0; padding: 0; }
   .wkwin li { display: flex; justify-content: space-between; gap: 1rem;
               padding: 0.55rem 0; border-bottom: 1px solid var(--rule); font-size: 0.9rem; }
@@ -344,7 +353,7 @@ window.addEventListener("unhandledrejection", function (e) {
 // ---------------------------------------------------------------------------
 // PASTE YOUR FIREBASE CONFIG HERE  (keep the name FIREBASE_CONFIG)
 // ---------------------------------------------------------------------------
-const FIREBASE_CONFIG = {
+const firebaseConfig = {
   apiKey: "AIzaSyB6z499xG7BLNspbFXeau0GOy4i7ugD6A0",
   authDomain: "b1g-pickem.firebaseapp.com",
   databaseURL: "https://b1g-pickem-default-rtdb.firebaseio.com",
@@ -352,10 +361,7 @@ const FIREBASE_CONFIG = {
   storageBucket: "b1g-pickem.firebasestorage.app",
   messagingSenderId: "285409208482",
   appId: "1:285409208482:web:83f59e5aec91a3d1678ffb"
-};// ---------------------------------------------------------------------------
-
-
-
+};
 for (var _p of [["React", typeof React], ["ReactDOM", typeof ReactDOM],
                 ["htm", typeof htm], ["firebase", typeof firebase]]) {
   if (_p[1] === "undefined") throw new Error(_p[0] + " failed to load");
@@ -886,6 +892,27 @@ function Admin(props) {
               }}>Make ${n} live</button>
     </div>
 
+    <h3 className="sect">Traffic</h3>
+    ${(function () {
+      const v = props.visits || {};
+      const days = Object.keys(v).sort().reverse().slice(0, 10);
+      if (!days.length) return html`<p className="quiet">No visits recorded yet.</p>`;
+      const peak = Math.max.apply(null, days.map(function (d) { return v[d]; }));
+      return html`
+        <ul className="visits">
+          ${days.map(function (d) {
+            return html`
+              <li key=${d}>
+                <span className="day">${d.slice(5)}</span>
+                <span className="bar" style=${{ width: (v[d] / peak * 60) + "%" }}></span>
+                <span className="num">${v[d]}</span>
+              </li>`;
+          })}
+        </ul>
+        <p className="quiet">Page opens per day, counted once per browser session.
+          Not tied to anyone in particular.</p>`;
+    })()}
+
     <h3 className="sect">Devices</h3>
     ${Object.keys(players).sort(function (a, b) {
         return players[a].displayName.localeCompare(players[b].displayName);
@@ -988,6 +1015,7 @@ function App() {
   const [gate, setGate]       = useState(null);
   const [submitted, setSub]   = useState({});
   const [subErr, setSubErr]   = useState(null);
+  const [visits, setVisits]   = useState({});
   const [isAdmin, setAdmin]   = useState(false);
   const [pinErr, setPinErr]   = useState(null);
   const wantsAdmin = (typeof window !== "undefined") && window.location.hash === "#admin";
@@ -1034,6 +1062,7 @@ function App() {
     db.ref("weeks").on("value",   function (s) { setWeeks(s.val() || {}); });
     db.ref("results").on("value", function (s) { setResults(s.val() || {}); });
     db.ref("submitted").on("value", function (s) { setSub(s.val() || {}); });
+    db.ref("visits").on("value", function (s) { setVisits(s.val() || {}); });
 
     // Anonymous daily visit count, deduped per browser session.
     try {
@@ -1247,7 +1276,8 @@ function App() {
     ${view === "admin"
       ? (isAdmin
           ? html`<${Admin} weeks=${weeks} players=${players} claims=${claims}
-                           results=${results} weekNum=${weekNum} now=${now} />`
+                           results=${results} weekNum=${weekNum} now=${now}
+                           visits=${visits} />`
           : html`<${AdminGate} onPin=${tryPin} error=${pinErr} />`)
       : view === "board"
       ? html`<${Board} weeks=${weeks} allPicks=${byWeek} results=${results}
