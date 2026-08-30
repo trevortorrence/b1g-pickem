@@ -183,6 +183,34 @@
   .wkwin .w { font-family: var(--display); font-size: 0.75rem; font-weight: 600;
               letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
   .wkwin .n { font-weight: 600; text-align: right; }
+  details.rules { margin-top: 2rem; border-top: 1px solid var(--rule); padding-top: 0.9rem; }
+  details.rules summary {
+    font-family: var(--display); font-size: 0.78rem; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+    cursor: pointer; list-style: none;
+  }
+  details.rules summary::-webkit-details-marker { display: none; }
+  details.rules summary::after { content: " +"; }
+  details.rules[open] summary::after { content: " \2212"; }
+  ul.ladder { list-style: none; margin: 0.75rem 0 0; padding: 0; }
+  ul.ladder li { display: flex; align-items: baseline; gap: 0.75rem;
+                 padding: 0.4rem 0; border-bottom: 1px solid var(--rule); font-size: 0.9rem; }
+  ul.ladder .pt { font-family: var(--display); font-size: 1.25rem; font-weight: 700;
+                  width: 2.25rem; flex: none; text-align: right; }
+  ul.ladder .pt.zero { color: var(--muted); }
+  .rulehead { font-weight: 600; font-size: 0.9rem; margin: 1rem 0 0.25rem; }
+  .rulenote { color: var(--muted); font-size: 0.85rem; margin: 0.5rem 0 0; }
+
+  .whosin { margin-top: 2rem; border-top: 1px solid var(--rule); padding-top: 1rem; }
+  .whosin h4 { font-family: var(--display); font-size: 0.75rem; font-weight: 600;
+               letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+               margin: 0 0 0.6rem; }
+  .chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+  .chip { font-size: 0.82rem; padding: 0.2rem 0.55rem; border-radius: 99px;
+          border: 1px solid var(--rule); color: var(--muted); background: var(--card); }
+  .chip.in { border-color: var(--ink); color: var(--ink); font-weight: 600; }
+  .chip.in::before { content: "\2713 "; color: var(--good); }
+
   .adminrow { display: flex; align-items: center; gap: 0.6rem; margin: 0.75rem 0; }
   .adminrow select, .adminrow input[type=text] {
     flex: 1; font-family: var(--body); font-size: 0.95rem; padding: 0.5rem;
@@ -230,9 +258,6 @@ window.addEventListener("error", function (e) {
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
 <script>
-// ---------------------------------------------------------------------------
-// PASTE YOUR FIREBASE CONFIG HERE  (keep the name FIREBASE_CONFIG)
-// ---------------------------------------------------------------------------
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyB6z499xG7BLNspbFXeau0GOy4i7ugD6A0",
   authDomain: "b1g-pickem.firebaseapp.com",
@@ -263,6 +288,28 @@ if (configured) {
 }
 
 const PICK_KEYS = ["g1", "g2", "g3"];
+
+// Primary team colors. Trademarked logos are deliberately not used; color plus
+// the abbreviation reads fine at a glance and never breaks.
+const COLORS = {
+  MICH:"#00274C", OSU:"#BB0000", PSU:"#041E42", MSU:"#18453B", IOWA:"#000000",
+  MINN:"#7A0019", WIS:"#C5050C", NEB:"#E41C38", ILL:"#E84A27", NU:"#4E2A84",
+  IND:"#990000",  PUR:"#000000", MD:"#E21833",  RU:"#CC0033",  ORE:"#154733",
+  WASH:"#4B2E83", USC:"#990000", UCLA:"#2D68C4",
+  CAL:"#003262",  TEX:"#BF5700", OKST:"#FF7300", OKLA:"#841617", ND:"#0C2340",
+  WMU:"#6C4023",  UTEP:"#041E42", OHIO:"#00694E", SDSU:"#0033A0", DUKE:"#00539B",
+  COLO:"#000000", BSU:"#0033A0", ISU:"#C8102E"
+};
+
+function teamColor(abbr) { return COLORS[abbr] || "#4B5563"; }
+
+// White text on dark colors, ink on light ones.
+function onColor(hex) {
+  const r = parseInt(hex.slice(1, 3), 16),
+        g = parseInt(hex.slice(3, 5), 16),
+        b = parseInt(hex.slice(5, 7), 16);
+  return (0.299 * r + 0.587 * g + 0.114 * b) > 150 ? "#00274C" : "#FFFFFF";
+}
 
 function countdown(msLeft) {
   if (msLeft <= 0) return "locked";
@@ -420,11 +467,16 @@ function CodeGate(props) {
 function GameRow(props) {
   const game = props.game, value = props.value;
   function opt(side) {
+    const abbr = game[side], c = teamColor(abbr), picked = value === abbr;
+    const style = picked
+      ? { background: c, borderColor: c, color: onColor(c) }
+      : { borderLeft: "6px solid " + c };
     return html`
-      <button className=${"choice" + (value === game[side] ? " on" : "")}
-              onClick=${function () { props.onPick(game[side]); }}>
-        ${game[side]}
-        <small>${side === "away" ? "Away" : "Home"}</small>
+      <button className=${"choice" + (picked ? " on" : "")} style=${style}
+              onClick=${function () { props.onPick(abbr); }}>
+        ${abbr}
+        <small style=${picked ? { color: onColor(c), opacity: 0.75 } : null}>
+          ${side === "away" ? "Away" : "Home"}</small>
       </button>`;
   }
   return html`
@@ -497,9 +549,10 @@ function Summary(props) {
     </div>
     <ul className="summary">
       ${PICK_KEYS.filter(function (k) { return games[k]; }).map(function (k) {
-        return html`
+          const t = (picks.winners || {})[k];
+          return html`
           <li key=${k}>
-            <span className="pick">${(picks.winners || {})[k]}</span>
+            <span className="pick" style=${{ color: teamColor(t) }}>${t}</span>
             <span className="of">${games[k].label}</span>
           </li>`;
       })}
@@ -540,7 +593,9 @@ function Everyone(props) {
                 <td className="name">${players[id].displayName}</td>
                 ${cols.map(function (k) {
                   const v = p && p.winners && p.winners[k];
-                  return html`<td key=${k} className=${v ? "" : "none"}>${v || "\u2014"}</td>`;
+                  return html`<td key=${k} className=${v ? "" : "none"}
+                    style=${v ? { color: teamColor(v), fontWeight: 600 } : null}>
+                    ${v || "\u2014"}</td>`;
                 })}
                 ${games.mich && html`
                   <td key="m" className=${s ? "" : "none"}>
@@ -748,6 +803,69 @@ function Admin(props) {
     <p className="quiet">Releasing a name lets someone claim it fresh. Picks are kept.</p>`;
 }
 
+function Scoring(props) {
+  const bye = props.bye;
+  return html`
+    <details className="rules">
+      <summary>How scoring works</summary>
+
+      <p className="rulehead">The three Big Ten games</p>
+      <p className="rulenote">One point for each winner you pick. ${bye
+        ? "This is a Michigan bye week, so three points is the most on offer."
+        : "Three points available."}</p>
+
+      ${!bye && html`
+        <div>
+        <p className="rulehead">The Michigan game</p>
+        <p className="rulenote">No point for picking Michigan \u2014 we all would.
+          Points come from the score you predict, and you only earn the best one
+          that applies.</p>
+        <ul className="ladder">
+          <li><span className="pt">5</span><span>Exact final score</span></li>
+          <li><span className="pt">3</span><span>Exact margin of victory</span></li>
+          <li><span className="pt">2</span><span>Margin within 3 points</span></li>
+          <li><span className="pt">1</span><span>Margin within 7 points</span></li>
+          <li><span className="pt zero">0</span><span>Anything further off</span></li>
+        </ul>
+        <p className="rulenote">Say Michigan wins 31\u201317. Predicting 31\u201317
+          scores 5. Predicting 24\u201310 is the same 14-point margin, so 3.
+          Predicting 30\u201320 is a 10-point margin, four off, so 1.</p>
+        </div>`}
+
+      <p className="rulehead">Each week</p>
+      <p className="rulenote">${bye ? "Three points" : "Eight points"} is a perfect
+        week. Picks lock Friday at 11:59 PM, and nobody \u2014 including Trevor
+        \u2014 can see anyone else's until then.</p>
+
+      <p className="rulehead">Standings</p>
+      <p className="rulenote">Season total decides it. Ties break on exact scores
+        first, then Michigan points.</p>
+    </details>`;
+}
+
+function WhosIn(props) {
+  const players = props.players, done = props.submitted || {};
+  const ids = Object.keys(players).sort(function (a, b) {
+    return players[a].displayName.localeCompare(players[b].displayName);
+  });
+  const n = ids.filter(function (id) { return done[id]; }).length;
+  return html`
+    <div className="whosin">
+      <h4>In this week \u2014 ${n} of ${ids.length}</h4>
+      <div className="chips">
+        ${ids.map(function (id) {
+          return html`
+            <span key=${id} className=${"chip" + (done[id] ? " in" : "")}>
+              ${players[id].displayName}</span>`;
+        })}
+      </div>
+      ${n < ids.length && html`
+        <p className="quiet" style=${{ textAlign: "left", marginTop: "0.6rem" }}>
+          Nobody can see anyone's picks until Friday night \u2014 this only shows
+          who has finished.</p>`}
+    </div>`;
+}
+
 // --- app -------------------------------------------------------------------
 
 function App() {
@@ -764,6 +882,7 @@ function App() {
   const [mode, setMode]       = useState(null);
   const [claimErr, setErr]    = useState(null);
   const [gate, setGate]       = useState(null);
+  const [submitted, setSub]   = useState({});
   const [isAdmin, setAdmin]   = useState(false);
   const [pinErr, setPinErr]   = useState(null);
   const wantsAdmin = (typeof window !== "undefined") && window.location.hash === "#admin";
@@ -794,6 +913,16 @@ function App() {
     db.ref("claims").on("value",  function (s) { setClaims(s.val() || {}); });
     db.ref("weeks").on("value",   function (s) { setWeeks(s.val() || {}); });
     db.ref("results").on("value", function (s) { setResults(s.val() || {}); });
+    db.ref("submitted").on("value", function (s) { setSub(s.val() || {}); });
+
+    // Anonymous daily visit count, deduped per browser session.
+    try {
+      const day = new Date().toISOString().slice(0, 10);
+      if (!sessionStorage.getItem("counted-" + day)) {
+        db.ref("visits/" + day).transaction(function (c) { return (c || 0) + 1; });
+        sessionStorage.setItem("counted-" + day, "1");
+      }
+    } catch (e) { /* private browsing blocks storage; skip counting */ }
     db.ref("config/currentWeek").on("value", function (s) {
       if (s.val() !== null) setWeekNum(String(s.val()));
     });
@@ -879,19 +1008,35 @@ function App() {
   // Re-check silently on load: the session survives in the database, so a
   // returning admin browser does not have to retype the PIN.
   useEffect(function () {
-    if (!wantsAdmin || !uid || !weekNum || isAdmin) return;
-    db.ref("config/currentWeek").set(Number(weekNum))
+    if (!wantsAdmin || !uid || isAdmin) return;
+    db.ref("config/adminCheck").set(firebase.database.ServerValue.TIMESTAMP)
       .then(function () { setAdmin(true); })
-      .catch(function () { /* not admin on this device yet */ });
-  }, [wantsAdmin, uid, weekNum, isAdmin]);
+      .catch(function () { /* not unlocked on this device yet */ });
+  }, [wantsAdmin, uid, isAdmin]);
 
   function tryPin(pin) {
     setPinErr(null);
-    db.ref("sessions/" + uid).set(pin)
-      .then(function () { return db.ref("config/currentWeek").set(Number(weekNum)); })
+    const clean = String(pin).trim();
+    db.ref("sessions/" + uid).set(clean)
+      .then(function () {
+        return db.ref("config/adminCheck").set(firebase.database.ServerValue.TIMESTAMP);
+      })
       .then(function () { setAdmin(true); })
-      .catch(function () { setPinErr("That PIN doesn't match."); });
+      .catch(function (e) {
+        setPinErr(e.code === "PERMISSION_DENIED"
+          ? "PIN rejected. Check secrets/adminPin in the Firebase console \u2014 it must "
+            + "exist at the root and be stored as text, in quotes, not as a number."
+          : (e.code || "Error") + ": " + e.message);
+      });
   }
+
+  // Publish only the fact that I'm finished - never what I picked.
+  useEffect(function () {
+    if (!meId || !weekNum || !week || locked) return;
+    db.ref("submitted/" + weekNum + "/" + meId)
+      .set(isComplete(week, picks) ? true : null)
+      .catch(function () { /* locked or offline */ });
+  }, [meId, weekNum, !!week, locked, isComplete(week, picks)]);
 
   function stamp() {
     db.ref("picks/" + weekNum + "/" + meId + "/submittedAt")
@@ -1000,7 +1145,10 @@ function App() {
             : html`<${Picks} week=${week} picks=${picks || {}} score=${score}
                              onPick=${pickWinner} onScore=${setScoreField}
                              complete=${complete}
-                             onDone=${function () { setMode("summary"); }} />`}`}`);
+                             onDone=${function () { setMode("summary"); }} />`}
+        ${!locked && html`<${WhosIn} players=${players}
+                                     submitted=${submitted[weekNum] || {}} />`}
+        <${Scoring} bye=${!!week.michiganBye} />`}`);
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(html`<${App} />`);
