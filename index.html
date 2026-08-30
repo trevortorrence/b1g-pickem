@@ -77,6 +77,47 @@
   .matchline { font-size: 0.95rem; font-weight: 600; margin: 1.1rem 0 0; }
 
   .game.mich { border-top: 3px solid var(--maize); }
+
+  .board-frame {
+    background: #0E0E10; border: 1px solid #2E2E33; border-radius: 6px;
+    padding: 0.55rem 0.7rem 0.85rem; margin-top: 0.5rem;
+    box-shadow: 0 2px 0 #000, inset 0 1px 0 rgba(255,255,255,.04);
+  }
+  .board-strip {
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    font-family: var(--display); font-size: 0.6rem; font-weight: 600;
+    letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--maize); opacity: 0.85; margin-bottom: 0.6rem;
+  }
+  .board-strip::before, .board-strip::after {
+    content: ""; flex: 1; height: 1px; background: #2E2E33;
+  }
+  .board-grid { display: flex; align-items: stretch; gap: 0.5rem; }
+  .board-side { flex: 1; text-align: center; }
+  .board-side .team {
+    font-family: var(--display); font-size: 0.8rem; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: #E8E6E1; padding: 0.3rem 0; margin-bottom: 0.4rem;
+    border-bottom: 2px solid #2E2E33; white-space: nowrap; overflow: hidden;
+  }
+  .board-side.wolverines .team { color: var(--maize); border-bottom-color: var(--maize); }
+  .board-side input {
+    width: 100%; background: #000; border: 1px solid #26262B; border-radius: 3px;
+    font-family: var(--display); font-weight: 700; font-size: 3.1rem; line-height: 1.05;
+    text-align: center; padding: 0.15rem 0; letter-spacing: 0.06em;
+    font-variant-numeric: tabular-nums;
+    color: #FFCB05; text-shadow: 0 0 14px rgba(255,203,5,.45);
+    -moz-appearance: textfield;
+  }
+  .board-side input::-webkit-outer-spin-button,
+  .board-side input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .board-side input::placeholder { color: #3A3A20; text-shadow: none; }
+  .board-side input:focus { outline: 2px solid var(--maize); outline-offset: 1px; }
+  .board-mid {
+    display: flex; align-items: center; font-family: var(--display);
+    font-size: 0.62rem; font-weight: 600; letter-spacing: 0.18em;
+    color: #55555C; padding-top: 2.1rem;
+  }
   .scorebox { display: flex; align-items: flex-start; gap: 0.6rem; }
   .scorebox label { flex: 1; }
   .scorebox .lbl { font-family: var(--display); font-size: 0.72rem; font-weight: 600;
@@ -269,6 +310,7 @@ const FIREBASE_CONFIG = {
 };// ---------------------------------------------------------------------------
 
 
+
 for (var _p of [["React", typeof React], ["ReactDOM", typeof ReactDOM],
                 ["htm", typeof htm], ["firebase", typeof firebase]]) {
   if (_p[1] === "undefined") throw new Error(_p[0] + " failed to load");
@@ -289,19 +331,25 @@ if (configured) {
 
 const PICK_KEYS = ["g1", "g2", "g3"];
 
-// Primary team colors. Trademarked logos are deliberately not used; color plus
-// the abbreviation reads fine at a glance and never breaks.
+// Primary + secondary team colors. The Big Ten runs heavily to crimson and to
+// black-and-gold, so the second color does most of the distinguishing work.
+// Trademarked logos are deliberately not used.
 const COLORS = {
-  MICH:"#00274C", OSU:"#BB0000", PSU:"#041E42", MSU:"#18453B", IOWA:"#000000",
-  MINN:"#7A0019", WIS:"#C5050C", NEB:"#E41C38", ILL:"#E84A27", NU:"#4E2A84",
-  IND:"#990000",  PUR:"#000000", MD:"#E21833",  RU:"#CC0033",  ORE:"#154733",
-  WASH:"#4B2E83", USC:"#990000", UCLA:"#2D68C4",
-  CAL:"#003262",  TEX:"#BF5700", OKST:"#FF7300", OKLA:"#841617", ND:"#0C2340",
-  WMU:"#6C4023",  UTEP:"#041E42", OHIO:"#00694E", SDSU:"#0033A0", DUKE:"#00539B",
-  COLO:"#000000", BSU:"#0033A0", ISU:"#C8102E"
+  MICH:["#00274C","#FFCB05"], OSU:["#BB0000","#666666"], PSU:["#041E42","#FFFFFF"],
+  MSU: ["#18453B","#FFFFFF"], IOWA:["#FFCD00","#000000"], MINN:["#7A0019","#FFCC33"],
+  WIS: ["#C5050C","#FFFFFF"], NEB:["#E41C38","#FFFFFF"], ILL:["#E84A27","#13294B"],
+  NU:  ["#4E2A84","#FFFFFF"], IND:["#990000","#EEEDEB"], PUR:["#CEB888","#000000"],
+  MD:  ["#E21833","#FFD520"], RU: ["#CC0033","#5F6A72"], ORE:["#154733","#FEE123"],
+  WASH:["#4B2E83","#B7A57A"], USC:["#990000","#FFC72C"], UCLA:["#2D68C4","#F2A900"],
+  CAL: ["#003262","#FDB515"], TEX:["#BF5700","#FFFFFF"], OKST:["#FF7300","#000000"],
+  OKLA:["#841617","#FDF9D8"], ND: ["#0C2340","#C99700"], WMU:["#6C4023","#B5A167"],
+  UTEP:["#041E42","#FF8200"], OHIO:["#00694E","#CDA077"], SDSU:["#0033A0","#FFCC00"],
+  DUKE:["#00539B","#FFFFFF"], COLO:["#000000","#CFB87C"], BSU:["#0033A0","#D64309"],
+  ISU: ["#C8102E","#F1BE48"]
 };
 
-function teamColor(abbr) { return COLORS[abbr] || "#4B5563"; }
+function teamColor(abbr) { return (COLORS[abbr] || ["#4B5563"])[0]; }
+function teamAccent(abbr) { return (COLORS[abbr] || ["#4B5563","#9CA3AF"])[1]; }
 
 // White text on dark colors, ink on light ones.
 function onColor(hex) {
@@ -467,15 +515,18 @@ function CodeGate(props) {
 function GameRow(props) {
   const game = props.game, value = props.value;
   function opt(side) {
-    const abbr = game[side], c = teamColor(abbr), picked = value === abbr;
+    const abbr = game[side], c = teamColor(abbr), a = teamAccent(abbr);
+    const picked = value === abbr;
     const style = picked
-      ? { background: c, borderColor: c, color: onColor(c) }
-      : { borderLeft: "6px solid " + c };
+      ? { background: c, borderColor: c, color: onColor(c),
+          boxShadow: "inset 0 -5px 0 " + a }
+      : { borderLeft: "10px solid " + c,
+          boxShadow: "inset 10px 0 0 -5px " + a };
     return html`
       <button className=${"choice" + (picked ? " on" : "")} style=${style}
               onClick=${function () { props.onPick(abbr); }}>
         ${abbr}
-        <small style=${picked ? { color: onColor(c), opacity: 0.75 } : null}>
+        <small style=${picked ? { color: onColor(c), opacity: 0.8 } : null}>
           ${side === "away" ? "Away" : "Home"}</small>
       </button>`;
   }
@@ -490,25 +541,29 @@ function MichRow(props) {
   const game = props.game, score = props.score;
   const michHome = game.michiganIs === "home";
   const oppAbbr = michHome ? game.away : game.home;
-  const bad = score.mich !== "" && score.opp !== "" && Number(score.mich) <= Number(score.opp);
+  const bad = score.mich !== "" && score.opp !== "" &&
+              Number(score.mich) <= Number(score.opp);
 
-  function field(key, label) {
+  function side(key, label, isMich) {
     return html`
-      <label>
-        <span className="lbl">${label}</span>
-        <input type="number" inputMode="numeric" min="0" max="99"
+      <div className=${"board-side" + (isMich ? " wolverines" : "")}>
+        <div className="team">${label}</div>
+        <input type="number" inputMode="numeric" min="0" max="99" placeholder="00"
                value=${score[key]}
                onChange=${function (e) { props.onScore(key, e.target.value); }} />
-      </label>`;
+      </div>`;
   }
 
   return html`
     <div className="game mich">
       <div className="worth">Predict the score \u2014 up to 5 points</div>
-      <div className="scorebox">
-        ${michHome ? field("opp", oppAbbr)  : field("mich", "MICH")}
-        <span className="dash">\u2013</span>
-        ${michHome ? field("mich", "MICH") : field("opp", oppAbbr)}
+      <div className="board-frame">
+        <div className="board-strip">Michigan Stadium</div>
+        <div className="board-grid">
+          ${michHome ? side("opp", oppAbbr, false) : side("mich", "Michigan", true)}
+          <div className="board-mid">FINAL</div>
+          ${michHome ? side("mich", "Michigan", true) : side("opp", oppAbbr, false)}
+        </div>
       </div>
       ${bad && html`<p className="whoops">
         We're all Michigan fans here \u2014 give Michigan the higher score.</p>`}
