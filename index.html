@@ -79,14 +79,14 @@
   .game.mich { border-top: 3px solid var(--maize); }
 
   .board-frame {
-    background: #001428;
-    border: 1px solid #0A3A66;
+    background: #002B54;
+    border: 1px solid #1E5A8F;
     border-radius: 5px;
     padding: 0.6rem 0.75rem 0.9rem;
     margin-top: 0.5rem;
-    box-shadow: 0 2px 0 #000814,
-                inset 0 0 40px rgba(0, 39, 76, .9),
-                inset 0 1px 0 rgba(255, 203, 5, .12);
+    box-shadow: 0 2px 0 #00152B,
+                inset 0 0 34px rgba(0, 20, 40, .55),
+                inset 0 1px 0 rgba(255, 203, 5, .2);
   }
   .board-strip {
     display: flex; align-items: center; justify-content: center; gap: 0.6rem;
@@ -97,15 +97,15 @@
   }
   .board-strip::before, .board-strip::after {
     content: ""; flex: 1; height: 1px;
-    background: linear-gradient(to right, transparent, #0A3A66, transparent);
+    background: linear-gradient(to right, transparent, #2E6FA8, transparent);
   }
   .board-grid { display: flex; align-items: stretch; gap: 0.5rem; }
   .board-side { flex: 1; text-align: center; min-width: 0; }
   .board-side .team {
     font-family: var(--display); font-size: 0.78rem; font-weight: 700;
     letter-spacing: 0.16em; text-transform: uppercase;
-    color: #7FA8CC; padding: 0.25rem 0; margin-bottom: 0.4rem;
-    border-bottom: 1px solid #0A3A66;
+    color: #B4D2EA; padding: 0.25rem 0; margin-bottom: 0.4rem;
+    border-bottom: 1px solid #2E6FA8;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .board-side.wolverines .team {
@@ -114,8 +114,8 @@
 
   /* Digits sit over a full set of dim "unlit" bulbs, the way an old
      backlit board shows its dark segments. */
-  .digits { position: relative; background: #000A14; border-radius: 3px;
-            box-shadow: inset 0 0 12px rgba(0,0,0,.9); }
+  .digits { position: relative; background: #001B36; border-radius: 3px;
+            box-shadow: inset 0 0 10px rgba(0, 10, 24, .75); }
   .digits .ghost, .digits input {
     font-family: 'Doto', 'VT323', ui-monospace, monospace;
     font-weight: 800; font-size: 3.15rem; line-height: 1.15;
@@ -125,7 +125,7 @@
   .digits .ghost {
     position: absolute; inset: 0; display: flex;
     align-items: center; justify-content: center;
-    color: rgba(255, 203, 5, .10); pointer-events: none; user-select: none;
+    color: rgba(255, 203, 5, .16); pointer-events: none; user-select: none;
   }
   .board-side input {
     position: relative; width: 100%; background: transparent;
@@ -141,7 +141,7 @@
   .board-mid {
     display: flex; align-items: center; font-family: var(--display);
     font-size: 0.6rem; font-weight: 700; letter-spacing: 0.16em;
-    color: #4E7BA3; padding-top: 2.2rem;
+    color: #86B2D6; padding-top: 2.2rem;
   }
 
   .whoops { color: var(--bad); font-size: 0.85rem; margin-top: 0.5rem; }
@@ -932,6 +932,7 @@ function WhosIn(props) {
               ${players[id].displayName}</span>`;
         })}
       </div>
+      ${props.error && html`<p className="whoops">${props.error}</p>`}
       ${n < ids.length && html`
         <p className="quiet" style=${{ textAlign: "left", marginTop: "0.6rem" }}>
           Nobody can see anyone's picks until Friday night \u2014 this only shows
@@ -956,6 +957,7 @@ function App() {
   const [claimErr, setErr]    = useState(null);
   const [gate, setGate]       = useState(null);
   const [submitted, setSub]   = useState({});
+  const [subErr, setSubErr]   = useState(null);
   const [isAdmin, setAdmin]   = useState(false);
   const [pinErr, setPinErr]   = useState(null);
   const wantsAdmin = (typeof window !== "undefined") && window.location.hash === "#admin";
@@ -1108,7 +1110,12 @@ function App() {
     if (!meId || !weekNum || !week || locked) return;
     db.ref("submitted/" + weekNum + "/" + meId)
       .set(isComplete(week, picks) ? true : null)
-      .catch(function () { /* locked or offline */ });
+      .then(function () { setSubErr(null); })
+      .catch(function (e) {
+        setSubErr(e.code === "PERMISSION_DENIED"
+          ? "Can't record who's finished \u2014 publish the latest database rules."
+          : e.message);
+      });
   }, [meId, weekNum, !!week, locked, isComplete(week, picks)]);
 
   function stamp() {
@@ -1219,7 +1226,7 @@ function App() {
                              onPick=${pickWinner} onScore=${setScoreField}
                              complete=${complete}
                              onDone=${function () { setMode("summary"); }} />`}
-        ${!locked && html`<${WhosIn} players=${players}
+        ${!locked && html`<${WhosIn} players=${players} error=${subErr}
                                      submitted=${submitted[weekNum] || {}} />`}
         <${Scoring} bye=${!!week.michiganBye} />`}`);
 }
