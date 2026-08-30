@@ -183,6 +183,23 @@
   .wkwin .w { font-family: var(--display); font-size: 0.75rem; font-weight: 600;
               letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
   .wkwin .n { font-weight: 600; text-align: right; }
+  .adminrow { display: flex; align-items: center; gap: 0.6rem; margin: 0.75rem 0; }
+  .adminrow select, .adminrow input[type=text] {
+    flex: 1; font-family: var(--body); font-size: 0.95rem; padding: 0.5rem;
+    border: 1.5px solid var(--rule); border-radius: 4px; background: var(--card); color: var(--ink);
+  }
+  .adminrow .mini { font-family: var(--display); font-size: 0.7rem; font-weight: 600;
+                    letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
+                    width: 3.5rem; flex: none; }
+  .btn { font-family: var(--display); font-size: 0.8rem; font-weight: 600;
+         letter-spacing: 0.06em; text-transform: uppercase; padding: 0.45rem 0.7rem;
+         background: var(--card); color: var(--ink); border: 1.5px solid var(--ink);
+         border-radius: 4px; cursor: pointer; }
+  .btn.warn { border-color: var(--bad); color: var(--bad); }
+  .btn:disabled { border-color: var(--rule); color: var(--muted); cursor: default; }
+  .saved { color: var(--good); font-size: 0.85rem; }
+  .shut { color: var(--muted); font-size: 0.85rem; font-style: italic; }
+
   h3.sect { font-family: var(--display); font-size: 1.1rem; font-weight: 600;
             text-transform: uppercase; letter-spacing: 0.04em;
             margin: 2rem 0 0; padding-bottom: 0.3rem; border-bottom: 2px solid var(--ink); }
@@ -225,7 +242,6 @@ const FIREBASE_CONFIG = {
   messagingSenderId: "285409208482",
   appId: "1:285409208482:web:83f59e5aec91a3d1678ffb"
 };// ---------------------------------------------------------------------------
-
 
 
 for (var _p of [["React", typeof React], ["ReactDOM", typeof ReactDOM],
@@ -584,6 +600,154 @@ function Board(props) {
     </ul>`;
 }
 
+function AdminGate(props) {
+  const [pin, setPin] = useState("");
+  return html`
+    <p className="lead">Commissioner tools. Enter the admin PIN.</p>
+    <div className="codepad">
+      <input type="password" inputMode="numeric" value=${pin} autoFocus
+             onChange=${function (e) { setPin(e.target.value); }} />
+      <button className="cta" disabled=${!pin}
+              onClick=${function () { props.onPin(pin); }}>Unlock</button>
+    </div>
+    ${props.error && html`<p className="whoops" style=${{textAlign:"center"}}>${props.error}</p>`}`;
+}
+
+function Admin(props) {
+  const weeks = props.weeks, players = props.players, claims = props.claims;
+  const nums = Object.keys(weeks).sort(function (a, b) { return Number(a) - Number(b); });
+  const [n, setN] = useState(props.weekNum);
+  const [note, setNote] = useState("");
+
+  const wk = weeks[n] || {};
+  const games = wk.games || {};
+  const res = (props.results || {})[n] || {};
+  const slateOpen = props.now < wk.adminDeadline;
+
+  function flash(m) { setNote(m); setTimeout(function () { setNote(""); }, 2500); }
+
+  function setWinner(g, team) {
+    db.ref("results/" + n + "/winners/" + g).set(team)
+      .then(function () { flash("Saved"); })
+      .catch(function (e) { flash(e.message); });
+  }
+  function setResScore(key, raw) {
+    const v = String(raw).replace(/[^0-9]/g, "").slice(0, 2);
+    db.ref("results/" + n + "/michScore/" + key).set(v === "" ? null : Number(v))
+      .catch(function (e) { flash(e.message); });
+  }
+  function setGameField(g, field, value) {
+    db.ref("weeks/" + n + "/games/" + g + "/" + field).set(value)
+      .catch(function (e) { flash(e.message); });
+  }
+
+  return html`
+    <div className="adminrow">
+      <span className="mini">Week</span>
+      <select value=${n} onChange=${function (e) { setN(e.target.value); }}>
+        ${nums.map(function (i) {
+          return html`<option key=${i} value=${i}>${weeks[i].label}</option>`;
+        })}
+      </select>
+      ${note && html`<span className="saved">${note}</span>`}
+    </div>
+
+    <h3 className="sect">Results</h3>
+    ${PICK_KEYS.filter(function (k) { return games[k]; }).map(function (k) {
+      const g = games[k], got = (res.winners || {})[k];
+      return html`
+        <div key=${k}>
+          <p className="matchline">${g.label}</p>
+          <div className="choices" style=${{marginTop:"0.4rem"}}>
+            ${["away", "home"].map(function (side) {
+              return html`
+                <button key=${side} className=${"choice" + (got === g[side] ? " on" : "")}
+                        onClick=${function () { setWinner(k, g[side]); }}>${g[side]}</button>`;
+            })}
+          </div>
+        </div>`;
+    })}
+    ${games.mich && html`
+      <p className="matchline">${games.mich.label} \u2014 final score</p>
+      <div className="scorebox" style=${{marginTop:"0.4rem"}}>
+        <label><span className="lbl">${games.mich.michiganIs === "home" ? games.mich.away : "MICH"}</span>
+          <input type="number" inputMode="numeric"
+                 value=${games.mich.michiganIs === "home"
+                   ? ((res.michScore || {}).opp != null ? (res.michScore || {}).opp : "")
+                   : ((res.michScore || {}).mich != null ? (res.michScore || {}).mich : "")}
+                 onChange=${function (e) {
+                   setResScore(games.mich.michiganIs === "home" ? "opp" : "mich", e.target.value);
+                 }} /></label>
+        <span className="dash">\u2013</span>
+        <label><span className="lbl">${games.mich.michiganIs === "home" ? "MICH" : games.mich.home}</span>
+          <input type="number" inputMode="numeric"
+                 value=${games.mich.michiganIs === "home"
+                   ? ((res.michScore || {}).mich != null ? (res.michScore || {}).mich : "")
+                   : ((res.michScore || {}).opp != null ? (res.michScore || {}).opp : "")}
+                 onChange=${function (e) {
+                   setResScore(games.mich.michiganIs === "home" ? "mich" : "opp", e.target.value);
+                 }} /></label>
+      </div>
+      <p className="quiet" style=${{marginTop:"0.4rem"}}>
+        Michigan can lose here \u2014 enter the real final.</p>`}
+
+    <h3 className="sect">Slate</h3>
+    ${slateOpen
+      ? html`
+        <p className="quiet" style=${{marginTop:"0.5rem",textAlign:"left"}}>
+          Editable until ${wk.adminDeadlineLocal}. Change all three fields together.</p>
+        ${PICK_KEYS.filter(function (k) { return games[k]; }).map(function (k) {
+          return html`
+            <div key=${k}>
+              <div className="adminrow">
+                <span className="mini">${k} away</span>
+                <input type="text" defaultValue=${games[k].away}
+                  onBlur=${function (e) { setGameField(k, "away", e.target.value.toUpperCase()); }} />
+                <span className="mini">home</span>
+                <input type="text" defaultValue=${games[k].home}
+                  onBlur=${function (e) { setGameField(k, "home", e.target.value.toUpperCase()); }} />
+              </div>
+              <div className="adminrow">
+                <span className="mini">label</span>
+                <input type="text" defaultValue=${games[k].label}
+                  onBlur=${function (e) { setGameField(k, "label", e.target.value); }} />
+              </div>
+            </div>`;
+        })}`
+      : html`<p className="shut">Locked \u2014 the slate closed ${wk.adminDeadlineLocal}.</p>`}
+
+    <h3 className="sect">Live week</h3>
+    <div className="adminrow">
+      <span className="mini">Showing</span>
+      <span style=${{flex:1}}>${(weeks[props.weekNum] || {}).label}</span>
+      <button className="btn" disabled=${n === props.weekNum}
+              onClick=${function () {
+                db.ref("config/currentWeek").set(Number(n))
+                  .then(function () { flash("Week is live"); })
+                  .catch(function (e) { flash(e.message); });
+              }}>Make ${n} live</button>
+    </div>
+
+    <h3 className="sect">Devices</h3>
+    ${Object.keys(players).sort(function (a, b) {
+        return players[a].displayName.localeCompare(players[b].displayName);
+      }).map(function (id) {
+      const c = claims[id] ? Object.keys(claims[id]).length : 0;
+      return html`
+        <div className="adminrow" key=${id}>
+          <span style=${{flex:1,fontWeight:600}}>${players[id].displayName}</span>
+          <span className="mini">${c ? c + (c === 1 ? " device" : " devices") : "none"}</span>
+          <button className="btn warn" disabled=${!c}
+                  onClick=${function () {
+                    db.ref("claims/" + id).remove()
+                      .then(function () { flash("Released " + players[id].displayName); })
+                      .catch(function (e) { flash(e.message); });
+                  }}>Release</button>
+        </div>`;
+    })}
+    <p className="quiet">Releasing a name lets someone claim it fresh. Picks are kept.</p>`;
+}
+
 // --- app -------------------------------------------------------------------
 
 function App() {
@@ -597,13 +761,17 @@ function App() {
   const [claims, setClaims]   = useState({});
   const [picks, setPicks]     = useState(null);
   const [score, setScore]     = useState({ mich: "", opp: "" });
-  const [editing, setEditing] = useState(false);
+  const [mode, setMode]       = useState(null);
   const [claimErr, setErr]    = useState(null);
   const [gate, setGate]       = useState(null);
+  const [isAdmin, setAdmin]   = useState(false);
+  const [pinErr, setPinErr]   = useState(null);
+  const wantsAdmin = (typeof window !== "undefined") && window.location.hash === "#admin";
   const [authErr, setAuthErr] = useState(null);
   const [offset, setOffset]   = useState(0);
   const [, setTick]           = useState(0);
   const scoreLoaded = useRef(false);
+  const scoreTimer  = useRef(null);
 
   // Sign in, and track the server clock so the countdown can't be faked.
   useEffect(function () {
@@ -641,18 +809,26 @@ function App() {
 
   // My picks for this week.
   useEffect(function () {
-    if (!meId || !weekNum) return;
+    if (!meId || !weekNum || !week) return;
     const ref = db.ref("picks/" + weekNum + "/" + meId);
     ref.on("value", function (s) {
       const v = s.val() || {};
       setPicks(v);
       if (!scoreLoaded.current) {
         if (v.michScore) setScore({ mich: String(v.michScore.mich), opp: String(v.michScore.opp) });
+        // Arriving already finished shows the summary; arriving unfinished
+        // keeps you on the form until you tap "I'm done".
+        setMode(isComplete(week, v) ? "summary" : "edit");
         scoreLoaded.current = true;
       }
     });
-    return function () { ref.off(); scoreLoaded.current = false; };
-  }, [meId, weekNum]);
+    return function () {
+      ref.off();
+      scoreLoaded.current = false;
+      setMode(null);
+      setScore({ mich: "", opp: "" });
+    };
+  }, [meId, weekNum, !!week]);
 
   // Every locked week's picks. The rules refuse unlocked ones, so only ask
   // for weeks whose deadline has passed.
@@ -700,6 +876,23 @@ function App() {
       });
   }
 
+  // Re-check silently on load: the session survives in the database, so a
+  // returning admin browser does not have to retype the PIN.
+  useEffect(function () {
+    if (!wantsAdmin || !uid || !weekNum || isAdmin) return;
+    db.ref("config/currentWeek").set(Number(weekNum))
+      .then(function () { setAdmin(true); })
+      .catch(function () { /* not admin on this device yet */ });
+  }, [wantsAdmin, uid, weekNum, isAdmin]);
+
+  function tryPin(pin) {
+    setPinErr(null);
+    db.ref("sessions/" + uid).set(pin)
+      .then(function () { return db.ref("config/currentWeek").set(Number(weekNum)); })
+      .then(function () { setAdmin(true); })
+      .catch(function () { setPinErr("That PIN doesn't match."); });
+  }
+
   function stamp() {
     db.ref("picks/" + weekNum + "/" + meId + "/submittedAt")
       .set(firebase.database.ServerValue.TIMESTAMP);
@@ -716,11 +909,14 @@ function App() {
     const next = Object.assign({}, score);
     next[key] = String(raw).replace(/[^0-9]/g, "").slice(0, 2);
     setScore(next);
-    const m = Number(next.mich), o = Number(next.opp);
-    if (next.mich !== "" && next.opp !== "" && m > o) {
-      db.ref("picks/" + weekNum + "/" + meId + "/michScore").set({ mich: m, opp: o });
-      stamp();
-    }
+    if (scoreTimer.current) clearTimeout(scoreTimer.current);
+    scoreTimer.current = setTimeout(function () {
+      const m = Number(next.mich), o = Number(next.opp);
+      if (next.mich !== "" && next.opp !== "" && m > o) {
+        db.ref("picks/" + weekNum + "/" + meId + "/michScore").set({ mich: m, opp: o });
+        stamp();
+      }
+    }, 900);
   }
 
   function shell(body) {
@@ -775,9 +971,15 @@ function App() {
     <nav className="tabs">
       ${tab("picks", locked ? "This week" : (complete ? "My picks \u2713" : "My picks"))}
       ${tab("board", "Standings")}
+      ${wantsAdmin && tab("admin", "Admin")}
     </nav>
 
-    ${view === "board"
+    ${view === "admin"
+      ? (isAdmin
+          ? html`<${Admin} weeks=${weeks} players=${players} claims=${claims}
+                           results=${results} weekNum=${weekNum} now=${now} />`
+          : html`<${AdminGate} onPin=${tryPin} error=${pinErr} />`)
+      : view === "board"
       ? html`<${Board} weeks=${weeks} allPicks=${byWeek} results=${results}
                        players=${players} meId=${meId} />`
       : html`
@@ -792,13 +994,13 @@ function App() {
         ${locked
           ? html`<${Everyone} week=${week} players=${players} all=${allPicks}
                               meId=${meId} result=${results[weekNum]} />`
-          : (complete && !editing)
+          : mode === "summary"
             ? html`<${Summary} week=${week} picks=${picks} left=${left}
-                               onEdit=${function () { setEditing(true); }} />`
+                               onEdit=${function () { setMode("edit"); }} />`
             : html`<${Picks} week=${week} picks=${picks || {}} score=${score}
                              onPick=${pickWinner} onScore=${setScoreField}
                              complete=${complete}
-                             onDone=${function () { setEditing(false); }} />`}`}`);
+                             onDone=${function () { setMode("summary"); }} />`}`}`);
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(html`<${App} />`);
