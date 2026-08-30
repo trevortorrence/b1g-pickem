@@ -6,7 +6,7 @@
 <title>Big Ten Pick'em</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&family=Doto:wght@600;800&family=VT323&display=swap" rel="stylesheet">
 
 <style>
   :root {
@@ -79,58 +79,71 @@
   .game.mich { border-top: 3px solid var(--maize); }
 
   .board-frame {
-    background: #0E0E10; border: 1px solid #2E2E33; border-radius: 6px;
-    padding: 0.55rem 0.7rem 0.85rem; margin-top: 0.5rem;
-    box-shadow: 0 2px 0 #000, inset 0 1px 0 rgba(255,255,255,.04);
+    background: #001428;
+    border: 1px solid #0A3A66;
+    border-radius: 5px;
+    padding: 0.6rem 0.75rem 0.9rem;
+    margin-top: 0.5rem;
+    box-shadow: 0 2px 0 #000814,
+                inset 0 0 40px rgba(0, 39, 76, .9),
+                inset 0 1px 0 rgba(255, 203, 5, .12);
   }
   .board-strip {
-    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
-    font-family: var(--display); font-size: 0.6rem; font-weight: 600;
-    letter-spacing: 0.3em; text-transform: uppercase;
-    color: var(--maize); opacity: 0.85; margin-bottom: 0.6rem;
+    display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+    font-family: var(--display); font-size: 0.62rem; font-weight: 700;
+    letter-spacing: 0.34em; text-transform: uppercase;
+    color: #FFCB05; margin-bottom: 0.65rem;
+    text-shadow: 0 0 10px rgba(255, 203, 5, .5);
   }
   .board-strip::before, .board-strip::after {
-    content: ""; flex: 1; height: 1px; background: #2E2E33;
+    content: ""; flex: 1; height: 1px;
+    background: linear-gradient(to right, transparent, #0A3A66, transparent);
   }
   .board-grid { display: flex; align-items: stretch; gap: 0.5rem; }
-  .board-side { flex: 1; text-align: center; }
+  .board-side { flex: 1; text-align: center; min-width: 0; }
   .board-side .team {
-    font-family: var(--display); font-size: 0.8rem; font-weight: 700;
+    font-family: var(--display); font-size: 0.78rem; font-weight: 700;
     letter-spacing: 0.16em; text-transform: uppercase;
-    color: #E8E6E1; padding: 0.3rem 0; margin-bottom: 0.4rem;
-    border-bottom: 2px solid #2E2E33; white-space: nowrap; overflow: hidden;
+    color: #7FA8CC; padding: 0.25rem 0; margin-bottom: 0.4rem;
+    border-bottom: 1px solid #0A3A66;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .board-side.wolverines .team { color: var(--maize); border-bottom-color: var(--maize); }
-  .board-side input {
-    width: 100%; background: #000; border: 1px solid #26262B; border-radius: 3px;
-    font-family: var(--display); font-weight: 700; font-size: 3.1rem; line-height: 1.05;
-    text-align: center; padding: 0.15rem 0; letter-spacing: 0.06em;
+  .board-side.wolverines .team {
+    color: #FFCB05; border-bottom-color: rgba(255, 203, 5, .45);
+  }
+
+  /* Digits sit over a full set of dim "unlit" bulbs, the way an old
+     backlit board shows its dark segments. */
+  .digits { position: relative; background: #000A14; border-radius: 3px;
+            box-shadow: inset 0 0 12px rgba(0,0,0,.9); }
+  .digits .ghost, .digits input {
+    font-family: 'Doto', 'VT323', ui-monospace, monospace;
+    font-weight: 800; font-size: 3.15rem; line-height: 1.15;
+    letter-spacing: 0.05em; text-align: center;
     font-variant-numeric: tabular-nums;
-    color: #FFCB05; text-shadow: 0 0 14px rgba(255,203,5,.45);
+  }
+  .digits .ghost {
+    position: absolute; inset: 0; display: flex;
+    align-items: center; justify-content: center;
+    color: rgba(255, 203, 5, .10); pointer-events: none; user-select: none;
+  }
+  .board-side input {
+    position: relative; width: 100%; background: transparent;
+    border: none; padding: 0.1rem 0; margin: 0;
+    color: #FFCB05;
+    text-shadow: 0 0 6px rgba(255,203,5,.85), 0 0 18px rgba(255,180,0,.55);
     -moz-appearance: textfield;
   }
   .board-side input::-webkit-outer-spin-button,
   .board-side input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-  .board-side input::placeholder { color: #3A3A20; text-shadow: none; }
-  .board-side input:focus { outline: 2px solid var(--maize); outline-offset: 1px; }
+  .board-side input::placeholder { color: transparent; }
+  .board-side input:focus { outline: 1px solid rgba(255,203,5,.6); outline-offset: 2px; }
   .board-mid {
     display: flex; align-items: center; font-family: var(--display);
-    font-size: 0.62rem; font-weight: 600; letter-spacing: 0.18em;
-    color: #55555C; padding-top: 2.1rem;
+    font-size: 0.6rem; font-weight: 700; letter-spacing: 0.16em;
+    color: #4E7BA3; padding-top: 2.2rem;
   }
-  .scorebox { display: flex; align-items: flex-start; gap: 0.6rem; }
-  .scorebox label { flex: 1; }
-  .scorebox .lbl { font-family: var(--display); font-size: 0.72rem; font-weight: 600;
-                   letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
-                   display: block; margin-bottom: 0.25rem; }
-  .scorebox input {
-    width: 100%; font-family: var(--display); font-size: 2rem; font-weight: 700;
-    text-align: center; padding: 0.4rem; color: var(--ink);
-    border: 1.5px solid var(--rule); border-radius: 4px; background: var(--card);
-  }
-  .scorebox input:focus { outline: 2px solid var(--ink); outline-offset: -1px; }
-  .dash { font-family: var(--display); font-size: 1.5rem; color: var(--muted);
-          padding-top: 1.6rem; }
+
   .whoops { color: var(--bad); font-size: 0.85rem; margin-top: 0.5rem; }
 
   .cta {
@@ -299,6 +312,9 @@ window.addEventListener("error", function (e) {
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
 <script>
+// ---------------------------------------------------------------------------
+// PASTE YOUR FIREBASE CONFIG HERE  (keep the name FIREBASE_CONFIG)
+// ---------------------------------------------------------------------------
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyB6z499xG7BLNspbFXeau0GOy4i7ugD6A0",
   authDomain: "b1g-pickem.firebaseapp.com",
@@ -308,7 +324,6 @@ const FIREBASE_CONFIG = {
   messagingSenderId: "285409208482",
   appId: "1:285409208482:web:83f59e5aec91a3d1678ffb"
 };// ---------------------------------------------------------------------------
-
 
 
 for (var _p of [["React", typeof React], ["ReactDOM", typeof ReactDOM],
@@ -548,9 +563,12 @@ function MichRow(props) {
     return html`
       <div className=${"board-side" + (isMich ? " wolverines" : "")}>
         <div className="team">${label}</div>
-        <input type="number" inputMode="numeric" min="0" max="99" placeholder="00"
-               value=${score[key]}
-               onChange=${function (e) { props.onScore(key, e.target.value); }} />
+        <div className="digits">
+          <span className="ghost" aria-hidden="true">88</span>
+          <input type="number" inputMode="numeric" min="0" max="99"
+                 value=${score[key]} aria-label=${label + " score"}
+                 onChange=${function (e) { props.onScore(key, e.target.value); }} />
+        </div>
       </div>`;
   }
 
@@ -558,7 +576,7 @@ function MichRow(props) {
     <div className="game mich">
       <div className="worth">Predict the score \u2014 up to 5 points</div>
       <div className="board-frame">
-        <div className="board-strip">Michigan Stadium</div>
+        <div className="board-strip">The Big House</div>
         <div className="board-grid">
           ${michHome ? side("opp", oppAbbr, false) : side("mich", "Michigan", true)}
           <div className="board-mid">FINAL</div>
