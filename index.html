@@ -353,7 +353,7 @@ window.addEventListener("unhandledrejection", function (e) {
 // ---------------------------------------------------------------------------
 // PASTE YOUR FIREBASE CONFIG HERE  (keep the name FIREBASE_CONFIG)
 // ---------------------------------------------------------------------------
-const firebaseConfig = {
+const FIREBASE_CONFIG = {
   apiKey: "AIzaSyB6z499xG7BLNspbFXeau0GOy4i7ugD6A0",
   authDomain: "b1g-pickem.firebaseapp.com",
   databaseURL: "https://b1g-pickem-default-rtdb.firebaseio.com",
@@ -361,8 +361,9 @@ const firebaseConfig = {
   storageBucket: "b1g-pickem.firebasestorage.app",
   messagingSenderId: "285409208482",
   appId: "1:285409208482:web:83f59e5aec91a3d1678ffb"
-};
-</script>
+};// ---------------------------------------------------------------------------
+
+
 for (var _p of [["React", typeof React], ["ReactDOM", typeof ReactDOM],
                 ["htm", typeof htm], ["firebase", typeof firebase]]) {
   if (_p[1] === "undefined") throw new Error(_p[0] + " failed to load");
